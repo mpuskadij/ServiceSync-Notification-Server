@@ -1,10 +1,12 @@
 package hr.foi.servicesync.business
 import hr.foi.servicesync.data.NotificationData
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import javax.annotation.PostConstruct
 
 @Service
 class ReservationService(
@@ -13,6 +15,12 @@ class ReservationService(
     private val messagingProvider: IMessagingProvider
 ) {
 
+    @PostConstruct
+    fun onServerStart() {
+        checkForUpcomingReservations()
+    }
+
+    @Scheduled(fixedRate = 360000)
     fun checkForUpcomingReservations() {
         val reservations = mutableListOf<Reservation>()
         val treshold = LocalDateTime.now().plus(Duration.ofHours(24)).atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
@@ -45,6 +53,4 @@ class ReservationService(
 
 
     }
-
-
 }
