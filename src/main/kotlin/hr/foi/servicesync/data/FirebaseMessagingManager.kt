@@ -7,23 +7,28 @@ import org.springframework.stereotype.Service
 
 @Service
 class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging) : IMessagingProvider {
+
     override fun sendNotification(notificationData: List<NotificationData>) {
         notificationData.forEach { notification ->
-            if (notification.fcmToken.isNotEmpty()) {
-                val data = mapOf(
-                    "title" to notification.title,
-                    "body" to notification.body
-                )
-                val message = Message
-                    .builder()
-                    .setToken(notification.fcmToken)
-                    .putAllData(data)
-                    .build()
+            notification.fcmToken.takeIf { it.isNotEmpty() }?.let { token ->
+                val data = mutableMapOf<String, String>().apply {
+                    notification.title.takeIf { it.isNotEmpty() }?.let { put("title", it) }
+                    notification.body.takeIf { it.isNotEmpty() }?.let { put("body", it) }
+                }
 
-                firebaseMessaging.send(message)
+                if (data.isNotEmpty()) {
+                    try {
+                        val message = Message.builder()
+                            .setToken(token)
+                            .putAllData(data)
+                            .build()
+
+                        firebaseMessaging.send(message)
+                    } catch (e: Exception) {
+                        println("Failed to send notification: ${e.message}")
+                    }
+                }
             }
-
         }
-
     }
 }
