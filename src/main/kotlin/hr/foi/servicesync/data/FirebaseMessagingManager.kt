@@ -7,17 +7,23 @@ import org.springframework.stereotype.Service
 
 @Service
 class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging) : IMessagingProvider {
-    override fun sendNotification(fcmToken: String, notificationData: NotificationData) {
-        val data = mapOf(
-            "title" to notificationData.title,
-            "body" to notificationData.body
-        )
-        val message = Message
-            .builder()
-            .setToken(fcmToken)
-            .putAllData(data)
-            .build()
+    override fun sendNotification(notificationData: List<NotificationData>) {
+        notificationData.forEach { notification ->
+            if (notification.fcmToken.isNotEmpty()) {
+                val data = mapOf(
+                    "title" to notification.title,
+                    "body" to notification.body
+                )
+                val message = Message
+                    .builder()
+                    .setToken(notification.fcmToken)
+                    .putAllData(data)
+                    .build()
 
-        firebaseMessaging.send(message)
+                firebaseMessaging.send(message)
+            }
+
+        }
+
     }
 }
