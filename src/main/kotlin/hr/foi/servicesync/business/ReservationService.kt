@@ -5,8 +5,9 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
-import javax.annotation.PostConstruct
+import java.time.ZonedDateTime
 
 @Service
 class ReservationService(
@@ -15,10 +16,7 @@ class ReservationService(
     private val messagingProvider: IMessagingProvider
 ) {
 
-    @PostConstruct
-    fun onServerStart() {
-        checkForUpcomingReservations()
-    }
+
 
     @Scheduled(fixedRate = 360000)
     fun checkForUpcomingReservations() {
@@ -29,7 +27,7 @@ class ReservationService(
             onSuccess = { unsentNotifications ->
                 unsentNotifications.forEach {
                     val reservation = it.toObject(Reservation::class.java)
-                    reservations.addLast(reservation)
+                    reservations.add(reservation)
                 }
             }
         )
@@ -37,13 +35,14 @@ class ReservationService(
             reservations.forEach { reservation ->
                 val fcm = fcmTokenProvider.getFcmToken(reservation.userId)
                 if (fcm.isNotEmpty()) {
-                    val date = LocalDateTime.from(Instant.ofEpochMilli(reservation.reservationDate))
+                    val instant = Instant.ofEpochMilli(reservation.reservationDate)
+                    val date = ZonedDateTime.ofInstant(instant,ZoneId.of("UTC")).toLocalDateTime()
                     val notificationData = NotificationData(
                         fcmToken = fcm,
                         title = "Podsjetnik za rezervaciju",
                         body =  "Vaša rezervacija za ${reservation.serviceName} od tvrtke ${reservation.companyId} počinje ${date}"
                     )
-                    allNotifications.addLast(notificationData)
+                    allNotifications.add(notificationData)
                 }
             }
 
