@@ -10,7 +10,7 @@ class FirestoreManager {
     private val reservationDateField = "reservationDate"
     private val notificationSentField = "notificationSent"
 
-    fun getAllUnsentNotifications(threshold : Number): MutableList<QueryDocumentSnapshot> {
+    fun getAllUnsentNotifications(threshold : Number, onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit) {
         val unsentNotifications = firestore
             .collection(reservationCollectionName)
             .whereLessThanOrEqualTo(reservationDateField,threshold)
@@ -19,6 +19,12 @@ class FirestoreManager {
             .get()
             .documents
 
-        return unsentNotifications
+        if (unsentNotifications.isNotEmpty()) {
+            onSuccess(unsentNotifications)
+        }
+    }
+
+    fun markNotificationAsSent(reservationDocumentSnapshot: QueryDocumentSnapshot) {
+        reservationDocumentSnapshot.reference.update(notificationSentField,true)
     }
 }
