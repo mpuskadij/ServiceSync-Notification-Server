@@ -15,30 +15,47 @@ class FirestoreManager(private val firestore: Firestore) : IReservationDataProvi
     private val notificationSentField = "notificationSent"
 
     override fun getAllUnsentNotifications(threshold : Long, onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit) {
-        val unsentNotifications = firestore
-            .collection(reservationCollectionName)
-            .whereLessThanOrEqualTo(reservationDateField,threshold)
-            .whereEqualTo(notificationSentField,false)
-            .get()
-            .get()
-            .documents
+        try {
+            val unsentNotifications = firestore
+                .collection(reservationCollectionName)
+                .whereLessThanOrEqualTo(reservationDateField,threshold)
+                .whereEqualTo(notificationSentField,false)
+                .get()
+                .get()
+                .documents
 
-        if (unsentNotifications.isNotEmpty()) {
-            onSuccess(unsentNotifications)
+            if (unsentNotifications.isNotEmpty()) {
+                onSuccess(unsentNotifications)
+            }
         }
+        catch (e : Exception) {
+            println("Error while fetching unsent notifications: ${e.message}")
+        }
+
     }
 
     override fun markNotificationAsSent(reservationDocumentSnapshot: QueryDocumentSnapshot) {
-        reservationDocumentSnapshot.reference.update(notificationSentField,true)
+        try {
+            reservationDocumentSnapshot.reference.update(notificationSentField,true)
+        }
+        catch (e : Exception) {
+            println("Error updating notificationSentField. Error: ${e.message}")
+        }
     }
 
     override fun getFcmToken(username: String): String {
-        return firestore
-            .collection(userCollectionName)
-            .document(username)
-            .get()
-            .get()
-            .getString(fcmTokenField) ?: ""
+         try {
+            return firestore
+                .collection(userCollectionName)
+                .document(username)
+                .get()
+                .get()
+                .getString(fcmTokenField) ?: ""
+        }
+        catch (e : Exception) {
+            println("Error fetching fcm token of $username. Error: ${e.message}")
+            return ""
+        }
 
     }
 }
