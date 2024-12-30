@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging) : IMessagingProvider {
 
     override fun sendNotification(notificationData: List<NotificationData>) {
+        val messages = mutableListOf<Message>()
         notificationData.forEach { notification ->
             notification.fcmToken.takeIf { it.isNotEmpty() }?.let { token ->
                 val data = mutableMapOf<String, String>().apply {
@@ -17,18 +18,19 @@ class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging)
                 }
 
                 if (data.isNotEmpty()) {
-                    try {
                         val message = Message.builder()
                             .setToken(token)
                             .putAllData(data)
                             .build()
 
+                        messages.add(message)
+
                         firebaseMessaging.send(message)
-                    } catch (e: Exception) {
-                        println("Failed to send notification: ${e.message}")
-                    }
                 }
             }
+        }
+        if (messages.isNotEmpty()) {
+            firebaseMessaging.sendEach(messages)
         }
     }
 }
