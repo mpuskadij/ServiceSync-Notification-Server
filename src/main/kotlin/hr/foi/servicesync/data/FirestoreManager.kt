@@ -11,7 +11,7 @@ class FirestoreManager(private val firestore: Firestore) : IReservationDataProvi
     private val reservationDateField = "reservationDate"
     private val notificationSentField = "notificationSent"
 
-    override fun getAllUnsentNotifications(threshold : Number, onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit) {
+    override fun getAllUnsentNotifications(threshold : Long, onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit) {
         val unsentNotifications = firestore
             .collection(reservationCollectionName)
             .whereLessThanOrEqualTo(reservationDateField,threshold)
