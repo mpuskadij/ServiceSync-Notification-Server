@@ -25,7 +25,6 @@ class ReservationService(
                 }
             }
         )
-        if (reservations.isNotEmpty()) {
             val allNotifications = mutableListOf<NotificationData>()
             reservations.forEach { reservation ->
                 val fcm = fcmTokenProvider.getFcmToken(reservation.userId)
@@ -44,7 +43,6 @@ class ReservationService(
                 messagingProvider.sendNotification(allNotifications)
             }
 
-        }
 
     }
 
