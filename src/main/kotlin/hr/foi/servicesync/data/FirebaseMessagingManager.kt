@@ -24,8 +24,6 @@ class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging)
                             .build()
 
                         messages.add(message)
-
-                        firebaseMessaging.send(message)
                 }
             }
         }
