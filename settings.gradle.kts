@@ -1,1 +1,1 @@
-rootProject.name = "controllers"
+rootProject.name = "ServiceSync-Notification-Server"
