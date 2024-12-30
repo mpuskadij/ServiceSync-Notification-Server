@@ -11,21 +11,22 @@ class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging)
     override fun sendNotification(notificationData: List<NotificationData>) {
         val messages = mutableListOf<Message>()
         notificationData.forEach { notification ->
-            notification.fcmToken.takeIf { it.isNotEmpty() }?.let { token ->
+            if (notification.fcmToken.isNotEmpty() && notification.body.isNotEmpty() && notification.title.isNotEmpty()) {
                 val data = mutableMapOf<String, String>().apply {
-                    notification.title.takeIf { it.isNotEmpty() }?.let { put("title", it) }
-                    notification.body.takeIf { it.isNotEmpty() }?.let { put("body", it) }
+                    "title" to notification.title
+                    "body" to notification.body
                 }
 
                 if (data.isNotEmpty()) {
-                        val message = Message.builder()
-                            .setToken(token)
-                            .putAllData(data)
-                            .build()
+                    val message = Message.builder()
+                        .setToken(notification.fcmToken)
+                        .putAllData(data)
+                        .build()
 
-                        messages.add(message)
+                    messages.add(message)
                 }
             }
+
         }
         if (messages.isNotEmpty()) {
             firebaseMessaging.sendEach(messages)
