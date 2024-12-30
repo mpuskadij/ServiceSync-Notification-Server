@@ -2,8 +2,10 @@ package hr.foi.servicesync.data
 
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.Message
+import org.springframework.stereotype.Service
 
-class FirebaseMessagingManager {
+@Service
+class FirebaseMessagingManager(private val firebaseMessaging: FirebaseMessaging) {
     fun sendNotification(fcmToken: String, notificationData: NotificationData) {
         val data = mapOf(
             "title" to notificationData.title,
@@ -15,6 +17,6 @@ class FirebaseMessagingManager {
             .putAllData(data)
             .build()
 
-        FirebaseMessaging.getInstance().send(message)
+        firebaseMessaging.send(message)
     }
 }

@@ -1,11 +1,11 @@
 package hr.foi.servicesync.data
 
 import com.google.cloud.firestore.Firestore
-import com.google.cloud.firestore.FirestoreOptions
 import com.google.cloud.firestore.QueryDocumentSnapshot
+import org.springframework.stereotype.Repository
 
-class FirestoreManager {
-    private val firestore : Firestore = FirestoreOptions.getDefaultInstance().service
+@Repository
+class FirestoreManager(private val firestore: Firestore) {
     private val reservationCollectionName = "reservations"
     private val reservationDateField = "reservationDate"
     private val notificationSentField = "notificationSent"
