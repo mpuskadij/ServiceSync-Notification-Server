@@ -25,6 +25,9 @@ dependencies {
 	implementation("com.google.cloud:google-cloud-firestore:3.30.2")
 	implementation("com.google.firebase:firebase-admin:9.4.2")
 
+	//scheduling fetching data from firestore
+	implementation("org.springframework.boot:spring-boot-starter-scheduling")
+
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
