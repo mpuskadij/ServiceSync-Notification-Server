@@ -3,12 +3,11 @@ import com.google.common.io.Resources
 import hr.foi.servicesync.data.NotificationData
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.text.DateFormat
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import java.util.Date
 
 @Service
 class ReservationService(
@@ -35,8 +34,7 @@ class ReservationService(
             reservations.forEach { reservation ->
                 val fcm = fcmTokenProvider.getFcmToken(reservation.userId)
                 if (fcm.isNotEmpty()) {
-                    val instant = Instant.ofEpochMilli(reservation.reservationDate)
-                    val date = ZonedDateTime.ofInstant(instant,ZoneId.of("UTC")).toLocalDateTime()
+                    val date = DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT).format(Date(reservation.reservationDate))
                     val notificationData = NotificationData(
                         fcmToken = fcm,
                         title = "Reservation reminder",
