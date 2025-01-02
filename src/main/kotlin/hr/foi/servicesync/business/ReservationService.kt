@@ -14,8 +14,8 @@ class ReservationService(
     private val reservationDataProvider: IReservationDataProvider,
     private val fcmTokenProvider: IFcmTokenProvider,
     private val messagingProvider: IMessagingProvider,
-    private val imageName : String = "notification_image.png"
 ) {
+    private val imageName : String = "notification_image.png"
 
     @Scheduled(fixedRate = 360000)
     fun checkForUpcomingReservations() {
