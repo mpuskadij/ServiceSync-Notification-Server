@@ -1,4 +1,5 @@
 package hr.foi.servicesync.business
+import com.google.common.io.Resources
 import hr.foi.servicesync.data.NotificationData
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -13,10 +14,9 @@ import java.time.ZonedDateTime
 class ReservationService(
     private val reservationDataProvider: IReservationDataProvider,
     private val fcmTokenProvider: IFcmTokenProvider,
-    private val messagingProvider: IMessagingProvider
+    private val messagingProvider: IMessagingProvider,
+    private val imageName : String = "notification_image.png"
 ) {
-
-
 
     @Scheduled(fixedRate = 360000)
     fun checkForUpcomingReservations() {
@@ -39,15 +39,17 @@ class ReservationService(
                     val date = ZonedDateTime.ofInstant(instant,ZoneId.of("UTC")).toLocalDateTime()
                     val notificationData = NotificationData(
                         fcmToken = fcm,
-                        title = "Podsjetnik za rezervaciju",
-                        body =  "Vaša rezervacija za ${reservation.serviceName} od tvrtke ${reservation.companyId} počinje ${date}"
+                        title = "Reservation reminder",
+                        body =  "${reservation.serviceName} from ${reservation.companyId} on ${date}"
                     )
                     allNotifications.add(notificationData)
                 }
             }
 
             if (allNotifications.isNotEmpty()) {
-                messagingProvider.sendNotification(allNotifications)
+                val pathToImage = Resources.getResource(imageName).path
+                messagingProvider.sendNotification(allNotifications,pathToImage)
+                //TODO add marking reservation as sent
             }
 
 
