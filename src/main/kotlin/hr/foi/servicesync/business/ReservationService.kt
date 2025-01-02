@@ -20,21 +20,18 @@ class ReservationService(
     @Scheduled(fixedRate = 360000)
     fun checkForUpcomingReservations() {
         println("Checking for upcoming reservations...")
-        val reservations = mutableListOf<Reservation>()
+        var reservations = mutableListOf<Reservation>()
         val minThreshold = LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
         val threshold = LocalDateTime.now().plus(Duration.ofHours(24)).atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
         reservationDataProvider.getAllUnsentNotifications(
             minThreshold =  minThreshold,
             maxThreshold = threshold,
             onSuccess = { unsentNotifications ->
-                unsentNotifications.forEach {
-                    val reservation = it.toObject(Reservation::class.java)
-                    reservations.add(reservation)
-                }
+                reservations = unsentNotifications.toMutableList()
             }
         )
         println("Found ${reservations.size} upcoming reservations that require sending a notification...")
-
+        val notificationMapping = mutableMapOf<NotificationData,Reservation>()
         val allNotifications = mutableListOf<NotificationData>()
             reservations.forEach { reservation ->
                 val fcm = fcmTokenProvider.getFcmToken(reservation.userId)
@@ -46,13 +43,27 @@ class ReservationService(
                         body =  "${reservation.serviceName} from ${reservation.companyId} on ${date}"
                     )
                     allNotifications.add(notificationData)
+                    notificationMapping[notificationData] = reservation
                 }
             }
 
             if (allNotifications.isNotEmpty()) {
                 val pathToImage = Resources.getResource(imageName).path
-                messagingProvider.sendNotification(allNotifications,pathToImage)
-                //TODO add marking reservation as sent
+                messagingProvider.sendNotification(allNotifications,pathToImage,
+                    onSuccessfullySentNotifications = {
+                        successfullNotifications ->
+                        val sentReservations = mutableListOf<Reservation>()
+                        successfullNotifications.forEach {
+                            val reservation = notificationMapping[it]
+                            reservation?.let {
+                                sentReservations.add(reservation)
+                            }
+                        }
+                        reservationDataProvider.markNotificationAsSent(sentReservations)
+
+                    }
+
+                )
             }
 
 

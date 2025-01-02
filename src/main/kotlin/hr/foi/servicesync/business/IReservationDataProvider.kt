@@ -1,13 +1,12 @@
 package hr.foi.servicesync.business
 
-import com.google.cloud.firestore.QueryDocumentSnapshot
 
 interface IReservationDataProvider {
     fun getAllUnsentNotifications(
         minThreshold : Long,
         maxThreshold: Long,
-        onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit
+        onSuccess: (List<Reservation>) -> Unit
     )
 
-    fun markNotificationAsSent(reservationDocumentSnapshot: QueryDocumentSnapshot)
+    fun markNotificationAsSent(successfullySentReservationNotifications: List<Reservation>)
 }

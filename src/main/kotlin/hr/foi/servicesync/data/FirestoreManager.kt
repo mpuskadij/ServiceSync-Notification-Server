@@ -4,6 +4,7 @@ import com.google.cloud.firestore.Firestore
 import com.google.cloud.firestore.QueryDocumentSnapshot
 import hr.foi.servicesync.business.IFcmTokenProvider
 import hr.foi.servicesync.business.IReservationDataProvider
+import hr.foi.servicesync.business.Reservation
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -13,8 +14,9 @@ class FirestoreManager(private val firestore: Firestore) : IReservationDataProvi
     private val userCollectionName = "users"
     private val fcmTokenField = "FCMToken"
     private val notificationSentField = "notificationSent"
+    private val reservationDocumentMap = mutableMapOf<Reservation,QueryDocumentSnapshot>()
 
-    override fun getAllUnsentNotifications(minThreshold : Long, maxThreshold: Long, onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit) {
+    override fun getAllUnsentNotifications(minThreshold : Long, maxThreshold: Long, onSuccess: (List<Reservation>) -> Unit) {
         try {
             val unsentNotifications = firestore
                 .collection(reservationCollectionName)
@@ -26,7 +28,13 @@ class FirestoreManager(private val firestore: Firestore) : IReservationDataProvi
                 .documents
 
             if (unsentNotifications.isNotEmpty()) {
-                onSuccess(unsentNotifications)
+                val reservations = mutableListOf<Reservation>()
+                unsentNotifications.forEach { unsentNotification ->
+                    val reservation = unsentNotification.toObject(Reservation::class.java)
+                    reservations.add(reservation)
+                    reservationDocumentMap[reservation] = unsentNotification
+                }
+                onSuccess(reservations)
             }
         }
         catch (e : Exception) {
@@ -35,9 +43,16 @@ class FirestoreManager(private val firestore: Firestore) : IReservationDataProvi
 
     }
 
-    override fun markNotificationAsSent(reservationDocumentSnapshot: QueryDocumentSnapshot) {
+    override fun markNotificationAsSent(successfullySentReservationNotifications: List<Reservation>) {
         try {
-            reservationDocumentSnapshot.reference.update(notificationSentField,true)
+            if (successfullySentReservationNotifications.isNotEmpty()) {
+                successfullySentReservationNotifications.forEach {
+                    reservationDocumentMap[it]?.reference?.update(notificationSentField,true)
+                }
+            }
+            else {
+                throw Exception("Received 0 reservations to update!")
+            }
         }
         catch (e : Exception) {
             println("Error updating notificationSentField. Error: ${e.message}")
