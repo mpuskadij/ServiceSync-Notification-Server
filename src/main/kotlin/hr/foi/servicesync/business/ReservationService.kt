@@ -17,7 +17,7 @@ class ReservationService(
 ) {
     private val imageName : String = "notification_image.png"
 
-    @Scheduled(fixedRate = 360000)
+    @Scheduled(fixedRate = 3600000)
     fun checkForUpcomingReservations() {
         println("Checking for upcoming reservations...")
         var reservations = mutableListOf<Reservation>()
