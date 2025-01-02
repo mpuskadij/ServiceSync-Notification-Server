@@ -19,10 +19,13 @@ class ReservationService(
 
     @Scheduled(fixedRate = 360000)
     fun checkForUpcomingReservations() {
+        println("Checking for upcoming reservations...")
         val reservations = mutableListOf<Reservation>()
-        val treshold = LocalDateTime.now().plus(Duration.ofHours(24)).atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
+        val minThreshold = LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
+        val threshold = LocalDateTime.now().plus(Duration.ofHours(24)).atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
         reservationDataProvider.getAllUnsentNotifications(
-            treshold,
+            minThreshold =  minThreshold,
+            maxThreshold = threshold,
             onSuccess = { unsentNotifications ->
                 unsentNotifications.forEach {
                     val reservation = it.toObject(Reservation::class.java)
@@ -30,7 +33,9 @@ class ReservationService(
                 }
             }
         )
-            val allNotifications = mutableListOf<NotificationData>()
+        println("Found ${reservations.size} upcoming reservations that require sending a notification...")
+
+        val allNotifications = mutableListOf<NotificationData>()
             reservations.forEach { reservation ->
                 val fcm = fcmTokenProvider.getFcmToken(reservation.userId)
                 if (fcm.isNotEmpty()) {

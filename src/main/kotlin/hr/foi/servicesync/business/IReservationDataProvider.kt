@@ -4,7 +4,8 @@ import com.google.cloud.firestore.QueryDocumentSnapshot
 
 interface IReservationDataProvider {
     fun getAllUnsentNotifications(
-        threshold: Long,
+        minThreshold : Long,
+        maxThreshold: Long,
         onSuccess: (MutableList<QueryDocumentSnapshot>) -> Unit
     )
 
